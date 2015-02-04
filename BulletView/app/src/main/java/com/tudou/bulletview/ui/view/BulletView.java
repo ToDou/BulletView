@@ -19,10 +19,12 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.tudou.bulletview.R;
 import com.tudou.bulletview.drawable.StateRoundRectDrawable;
 import com.tudou.bulletview.model.Comment;
+import com.tudou.bulletview.util.DisplayUtil;
 import com.tudou.bulletview.util.DrawableUtils;
 
 import java.util.ArrayList;
@@ -72,17 +74,19 @@ public class BulletView extends LinearLayout {
     }
 
     private void addTag(final Comment tag) {
-        final Button button = new Button(mContext);
-        button.setGravity(Gravity.START);
+        final TextView button = new TextView(mContext);
+        button.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
         button.setText(stringFilter(ToDBC(tag.content)));
         button.setTextColor(getResources().getColor(android.R.color.white));
         button.setTextSize(14);
-        button.setLineSpacing(DEFAULT_TAG_PADDING_TOP, 1);
+        button.setIncludeFontPadding(false);
+        button.setCompoundDrawablePadding(0);
+        //button.setLineSpacing(DEFAULT_TAG_PADDING_TOP, 1);
         button.setPadding(DEFAULT_TAG_PADDING, DEFAULT_TAG_PADDING_TOP,
                 DEFAULT_TAG_PADDING, DEFAULT_TAG_PADDING_TOP);
         int btnWidth = (int) (2 * DEFAULT_TAG_PADDING + button.getPaint().measureText(button.getText().toString()));
         int line = btnWidth / MAX_WIDTH;
-        int btnHeight = dip2px(14) + DEFAULT_LAYOUT_MARGIN_TOP * 2 + line * dip2px(14) + line * DEFAULT_TAG_PADDING_TOP;
+        int btnHeight = DisplayUtil.sp2px(mContext, 14) + DEFAULT_TAG_PADDING_TOP * 2 + line * DisplayUtil.sp2px(mContext, 14) + line * DEFAULT_TAG_PADDING_TOP;
         StateRoundRectDrawable drawable = new StateRoundRectDrawable(Color.parseColor(DrawableUtils.getBackgoundColor(
                 tag.content.hashCode())), Color.parseColor("#5d5d5d"));
         drawable.setBottomLeftRedius(btnHeight / 2);
@@ -102,7 +106,6 @@ public class BulletView extends LinearLayout {
         mLayoutItem = new LinearLayout(mContext);
         LayoutParams lParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         lParams.topMargin = DEFAULT_LAYOUT_MARGIN_TOP;
-        mTotalHeight += DEFAULT_LAYOUT_MARGIN_TOP + btnHeight;
         mLayoutItem.setLayoutParams(lParams);
         addView(mLayoutItem);
         mLayoutItem.addView(frameLayout, layoutParams);
@@ -132,8 +135,12 @@ public class BulletView extends LinearLayout {
                     mTimer.cancel();
                     return;
                 }
+                addTag(new Comment(comments.get(0)));
+                mTotalHeight += DEFAULT_LAYOUT_MARGIN_TOP + getChildAt(getChildCount() - 1).getHeight();
+                getChildAt(getChildCount() - 1).setVisibility(View.GONE);
                 final long millis = millisUntilFinished;
-                int layoutAdd = calculateHeight(comments.get(0)) + DEFAULT_LAYOUT_MARGIN_TOP;
+                //int layoutAdd = calculateHeight(comments.get(0)) + DEFAULT_LAYOUT_MARGIN_TOP;
+                int layoutAdd = getChildAt(getChildCount() - 1).getHeight();
                 while (mTotalHeight + layoutAdd > MAX_HEIGHT) {
                     int removeHeight = getChildAt(0).getHeight();
                     removeViewAt(0);
@@ -159,8 +166,8 @@ public class BulletView extends LinearLayout {
                                     mTimer.cancel();
                                     return;
                                 }
-                                addTag(new Comment(comments.get(0)));
                                 comments.remove(0);
+                                getChildAt(getChildCount() - 1).setVisibility(View.VISIBLE);
                             }
 
                             @Override
@@ -175,6 +182,7 @@ public class BulletView extends LinearLayout {
                 }
                 if (getChildCount() == 0) {
                     addTag(new Comment(comments.get(0)));
+                    mTotalHeight += DEFAULT_LAYOUT_MARGIN_TOP + getChildAt(getChildCount() - 1).getHeight();
                     comments.remove(0);
                 }
             }
@@ -200,15 +208,17 @@ public class BulletView extends LinearLayout {
     }
 
     private int calculateHeight(String comment) {
-        final Button button = new Button(mContext);
+        final TextView button = new TextView(mContext);
         button.setText(stringFilter(ToDBC(comment)));
+        button.setIncludeFontPadding(false);
         button.setTextColor(getResources().getColor(android.R.color.white));
-        button.setTextSize(15);
+        button.setTextSize(14);
+        //button.setLineSpacing(DEFAULT_TAG_PADDING_TOP, 1);
         button.setPadding(DEFAULT_TAG_PADDING, DEFAULT_TAG_PADDING_TOP,
                 DEFAULT_TAG_PADDING, DEFAULT_TAG_PADDING_TOP);
         int btnWidth = (int) (2 * DEFAULT_TAG_PADDING + button.getPaint().measureText(button.getText().toString()));
         int line = btnWidth / MAX_WIDTH;
-        int btnHeight = dip2px(14) + DEFAULT_LAYOUT_MARGIN_TOP * 2 + line * dip2px(14) + line * DEFAULT_TAG_PADDING_TOP;
+        int btnHeight = DisplayUtil.sp2px(mContext, 14) + DEFAULT_TAG_PADDING_TOP * 2 + line * DisplayUtil.sp2px(mContext, 14) + line * DEFAULT_TAG_PADDING_TOP;
         return btnHeight;
     }
 
