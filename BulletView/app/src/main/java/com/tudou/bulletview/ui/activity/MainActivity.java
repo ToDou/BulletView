@@ -6,16 +6,35 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.tudou.bulletview.R;
+import com.tudou.bulletview.ui.view.BulletView;
+
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+import butterknife.OnClick;
 
 
 public class MainActivity extends Activity {
+
+    @InjectView(R.id.bullet_view)
+    BulletView mBulletView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ButterKnife.inject(this);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @OnClick(R.id.btn_start)
+    @SuppressWarnings("unused")
+    public void OnClick() {
+        mBulletView.addComments();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

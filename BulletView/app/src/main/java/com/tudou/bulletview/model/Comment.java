@@ -8,4 +8,10 @@ public class Comment {
     public int id;
     public String content;
 
+    public Comment() {}
+
+    public Comment(String content) {
+        this.content = content;
+    }
+
 }

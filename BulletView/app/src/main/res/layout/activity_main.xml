@@ -9,7 +9,15 @@
     tools:context=".MainActivity">
 
     <com.tudou.bulletview.ui.view.BulletView
+        android:id="@+id/bullet_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="150dp" />
+
+    <Button
+        android:id="@+id/btn_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:text="开始"/>
 
 </FrameLayout>
