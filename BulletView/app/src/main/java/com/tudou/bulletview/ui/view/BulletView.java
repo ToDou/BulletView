@@ -76,13 +76,13 @@ public class BulletView extends LinearLayout {
         button.setGravity(Gravity.START);
         button.setText(stringFilter(ToDBC(tag.content)));
         button.setTextColor(getResources().getColor(android.R.color.white));
-        button.setTextSize(12);
+        button.setTextSize(14);
         button.setLineSpacing(DEFAULT_TAG_PADDING_TOP, 1);
         button.setPadding(DEFAULT_TAG_PADDING, DEFAULT_TAG_PADDING_TOP,
                 DEFAULT_TAG_PADDING, DEFAULT_TAG_PADDING_TOP);
         int btnWidth = (int) (2 * DEFAULT_TAG_PADDING + button.getPaint().measureText(button.getText().toString()));
         int line = btnWidth / MAX_WIDTH;
-        int btnHeight = DEFAULT_TAG_HEIGHT + line * dip2px(12) + line * DEFAULT_TAG_PADDING_TOP;
+        int btnHeight = dip2px(14) + DEFAULT_LAYOUT_MARGIN_TOP * 2 + line * dip2px(14) + line * DEFAULT_TAG_PADDING_TOP;
         StateRoundRectDrawable drawable = new StateRoundRectDrawable(Color.parseColor(DrawableUtils.getBackgoundColor(
                 tag.content.hashCode())), Color.parseColor("#5d5d5d"));
         drawable.setBottomLeftRedius(btnHeight / 2);
@@ -208,7 +208,7 @@ public class BulletView extends LinearLayout {
                 DEFAULT_TAG_PADDING, DEFAULT_TAG_PADDING_TOP);
         int btnWidth = (int) (2 * DEFAULT_TAG_PADDING + button.getPaint().measureText(button.getText().toString()));
         int line = btnWidth / MAX_WIDTH;
-        int btnHeight = DEFAULT_TAG_HEIGHT + line * 15 + line * DEFAULT_TAG_PADDING_TOP;
+        int btnHeight = dip2px(14) + DEFAULT_LAYOUT_MARGIN_TOP * 2 + line * dip2px(14) + line * DEFAULT_TAG_PADDING_TOP;
         return btnHeight;
     }
 
