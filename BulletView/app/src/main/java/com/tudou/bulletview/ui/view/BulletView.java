@@ -20,11 +20,14 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import com.tudou.bulletview.R;
 import com.tudou.bulletview.drawable.StateRoundRectDrawable;
 import com.tudou.bulletview.model.Comment;
 import com.tudou.bulletview.util.DrawableUtils;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by tudou on 15-2-3.
@@ -32,17 +35,19 @@ import java.util.ArrayList;
 public class BulletView extends LinearLayout {
     private final int MAX_BULLET_VIEW_HEIGHT = 200;
     private final int MAX_BULLET_VIEW_WIDTH = 100;
-    private final int DEFAULT_TAG_PADDING = 12;
-    private final int DEFAULT_TAG_MARGIN = 12;
-    private final int DEFAULT_TAG_PADDING_TOP = 3;
-    private final int DEFAULT_LAYOUT_MARGIN_TOP = 12;
-    private final int DEFAULT_TAG_HEIGHT = 28;
+    private final int DEFAULT_TAG_PADDING = getResources().getDimensionPixelOffset(R.dimen.default_tag_padding);
+    private final int DEFAULT_TAG_MARGIN = getResources().getDimensionPixelOffset(R.dimen.default_tag_margin);
+    private final int DEFAULT_TAG_PADDING_TOP = getResources().getDimensionPixelOffset(R.dimen.default_tag_padding_top);
+    private final int DEFAULT_LAYOUT_MARGIN_TOP = getResources().getDimensionPixelOffset(R.dimen.default_tag_layout_margin_top);
+    private final int DEFAULT_TAG_HEIGHT = getResources().getDimensionPixelOffset(R.dimen.default_tag_height);
+
+    private final int MAX_WIDTH = getResources().getDimensionPixelOffset(R.dimen.max_width);
+    private final int MAX_HEIGHT = getResources().getDimensionPixelOffset(R.dimen.max_height);
 
     private ArrayList<Comment> comments;
     private ArrayList<Comment> commentsShow = new ArrayList<>();
     private LinearLayout mLayoutItem;
     private Context mContext;
-    private int tempWidth = 0;
     private int mTotalHeight;
     private CountDownTimer mTimer;
     private int maxHeight;
@@ -59,7 +64,7 @@ public class BulletView extends LinearLayout {
     public BulletView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         setOrientation(VERTICAL);
-        setGravity(Gravity.BOTTOM);
+        setGravity(Gravity.BOTTOM|Gravity.RIGHT);
         init();
     }
 
@@ -68,31 +73,38 @@ public class BulletView extends LinearLayout {
 
     private void addTag(final Comment tag) {
         final Button button = new Button(mContext);
-        button.setText(tag.content);
+        button.setGravity(Gravity.START);
+        button.setText(stringFilter(ToDBC(tag.content)));
         button.setTextColor(getResources().getColor(android.R.color.white));
-        button.setTextSize(15);
+        button.setTextSize(12);
+        button.setLineSpacing(DEFAULT_TAG_PADDING_TOP, 1);
+        button.setPadding(DEFAULT_TAG_PADDING, DEFAULT_TAG_PADDING_TOP,
+                DEFAULT_TAG_PADDING, DEFAULT_TAG_PADDING_TOP);
+        int btnWidth = (int) (2 * DEFAULT_TAG_PADDING + button.getPaint().measureText(button.getText().toString()));
+        int line = btnWidth / MAX_WIDTH;
+        int btnHeight = DEFAULT_TAG_HEIGHT + line * dip2px(12) + line * DEFAULT_TAG_PADDING_TOP;
         StateRoundRectDrawable drawable = new StateRoundRectDrawable(Color.parseColor(DrawableUtils.getBackgoundColor(
                 tag.content.hashCode())), Color.parseColor("#5d5d5d"));
-        drawable.setDefautRadius(dip2px(DEFAULT_TAG_HEIGHT) / 2);
+        drawable.setBottomLeftRedius(btnHeight / 2);
+        drawable.setTopLeftRedius(btnHeight / 2);
+        drawable.setBottomRightRedius(0);
+        drawable.setTopRightRedius(0);
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
             button.setBackground(drawable);
         } else {
             button.setBackgroundDrawable(drawable);
         }
-        button.setPadding(dip2px(DEFAULT_TAG_PADDING), dip2px(DEFAULT_TAG_PADDING_TOP),
-                dip2px(DEFAULT_TAG_PADDING), dip2px(DEFAULT_TAG_PADDING_TOP));
-        int btnWidth = (int) (2 * dip2px(DEFAULT_TAG_PADDING) + button.getPaint().measureText(button.getText().toString()));
-        LayoutParams layoutParams = new LayoutParams(btnWidth, dip2px(DEFAULT_TAG_HEIGHT));
+        if (line > 0) btnWidth = MAX_WIDTH;
+        LayoutParams layoutParams = new LayoutParams(btnWidth, btnHeight);
         FrameLayout frameLayout = new FrameLayout(mContext);
         frameLayout.setLayoutParams(layoutParams);
         frameLayout.addView(button);
         mLayoutItem = new LinearLayout(mContext);
-        LayoutParams lParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-        lParams.topMargin = dip2px(DEFAULT_LAYOUT_MARGIN_TOP);
-        mTotalHeight += dip2px(DEFAULT_LAYOUT_MARGIN_TOP) + dip2px(DEFAULT_TAG_HEIGHT);
+        LayoutParams lParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        lParams.topMargin = DEFAULT_LAYOUT_MARGIN_TOP;
+        mTotalHeight += DEFAULT_LAYOUT_MARGIN_TOP + btnHeight;
         mLayoutItem.setLayoutParams(lParams);
         addView(mLayoutItem);
-        tempWidth = dip2px(DEFAULT_TAG_MARGIN) + btnWidth;
         mLayoutItem.addView(frameLayout, layoutParams);
         AlphaAnimation animation_alpha=new AlphaAnimation(0.1f,1.0f);
         //第一个参数fromAlpha为 动画开始时候透明度
@@ -107,27 +119,28 @@ public class BulletView extends LinearLayout {
         mLayoutItem = new LinearLayout(mContext);
         mLayoutItem.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         addView(mLayoutItem);
-        tempWidth = 0;
         for (Comment tag : comments) {
             addTag(tag);
         }
     }
 
-    public void addComments() {
-        mTimer = new CountDownTimer(16 * 1000, 2 * 1000) {
+    public void addComments(final ArrayList<String> comments) {
+        mTimer = new CountDownTimer(20 * 1000 * 1000, 2 * 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
+                if (comments.size() == 0) {
+                    mTimer.cancel();
+                    return;
+                }
                 final long millis = millisUntilFinished;
-                int relative_to_self_translate_height = DEFAULT_LAYOUT_MARGIN_TOP + DEFAULT_TAG_HEIGHT;
-                int layoutAdd = dip2px(DEFAULT_LAYOUT_MARGIN_TOP) + dip2px(DEFAULT_TAG_HEIGHT);
-                if (mTotalHeight + layoutAdd > dip2px(150)) {
+                int layoutAdd = calculateHeight(comments.get(0)) + DEFAULT_LAYOUT_MARGIN_TOP;
+                while (mTotalHeight + layoutAdd > MAX_HEIGHT) {
+                    int removeHeight = getChildAt(0).getHeight();
                     removeViewAt(0);
-                    mTotalHeight -= layoutAdd;
+                    mTotalHeight -= removeHeight + DEFAULT_LAYOUT_MARGIN_TOP;
                 }
                 for (int i = 0; i < getChildCount(); i++) {
                     View view = getChildAt(i);
-                    final float scale = mContext.getResources().getDisplayMetrics().density;
-
                     TranslateAnimation animation_translate=new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0, Animation.ABSOLUTE, - layoutAdd);
                     //第一个参数fromXDelta为动画起始时 X坐标上的移动位置
                     //第二个参数toXDelta为动画结束时 X坐标上的移动位置
@@ -142,7 +155,12 @@ public class BulletView extends LinearLayout {
 
                             @Override
                             public void onAnimationEnd(Animation animation) {
-                                addTag(new Comment("这是弹幕" + millis));
+                                if (comments.size() == 0) {
+                                    mTimer.cancel();
+                                    return;
+                                }
+                                addTag(new Comment(comments.get(0)));
+                                comments.remove(0);
                             }
 
                             @Override
@@ -156,7 +174,8 @@ public class BulletView extends LinearLayout {
                     view.startAnimation(animation_translate);
                 }
                 if (getChildCount() == 0) {
-                    addTag(new Comment("这是弹幕" + millis));
+                    addTag(new Comment(comments.get(0)));
+                    comments.remove(0);
                 }
             }
 
@@ -168,6 +187,31 @@ public class BulletView extends LinearLayout {
         mTimer.start();
     }
 
+    public void stop() {
+        if (mTimer != null) {
+            mTimer.cancel();
+        }
+    }
+
+    public void start() {
+        if (mTimer != null) {
+            mTimer.start();
+        }
+    }
+
+    private int calculateHeight(String comment) {
+        final Button button = new Button(mContext);
+        button.setText(stringFilter(ToDBC(comment)));
+        button.setTextColor(getResources().getColor(android.R.color.white));
+        button.setTextSize(15);
+        button.setPadding(DEFAULT_TAG_PADDING, DEFAULT_TAG_PADDING_TOP,
+                DEFAULT_TAG_PADDING, DEFAULT_TAG_PADDING_TOP);
+        int btnWidth = (int) (2 * DEFAULT_TAG_PADDING + button.getPaint().measureText(button.getText().toString()));
+        int line = btnWidth / MAX_WIDTH;
+        int btnHeight = DEFAULT_TAG_HEIGHT + line * 15 + line * DEFAULT_TAG_PADDING_TOP;
+        return btnHeight;
+    }
+
     private int getDeviceWidth() {
         DisplayMetrics metrics = new DisplayMetrics();
         ((Activity) mContext).getWindowManager().getDefaultDisplay().getMetrics(metrics);
@@ -177,6 +221,34 @@ public class BulletView extends LinearLayout {
     private int dip2px(float dipValue) {
         final float scale = mContext.getResources().getDisplayMetrics().density;
         return (int) (dipValue * scale + 0.5f);
+    }
+
+    /**
+     * 全角转换为半角
+     *
+     * @param input
+     * @return
+     */
+    public static String ToDBC(String input) {
+        char[] c = input.toCharArray();
+        for (int i = 0; i < c.length; i++) {
+            if (c[i] == 12288) {
+                c[i] = (char) 32;
+                continue;
+            }
+            if (c[i] > 65280 && c[i] < 65375)
+                c[i] = (char) (c[i] - 65248);
+        }
+        return new String(c);
+    }
+
+    public static String stringFilter(String str) {
+        str = str.replaceAll("【", "[").replaceAll("】", "]")
+                .replaceAll("！", "!").replaceAll("：", ":").replace("，", ",").replace("。", ".");// 替换中文标号
+        String regEx = "[『』]"; // 清除掉特殊字符
+        Pattern p = Pattern.compile(regEx);
+        Matcher m = p.matcher(str);
+        return m.replaceAll("").trim();
     }
 
 }

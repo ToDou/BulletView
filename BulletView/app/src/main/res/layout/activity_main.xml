@@ -10,8 +10,9 @@
 
     <com.tudou.bulletview.ui.view.BulletView
         android:id="@+id/bullet_view"
-        android:layout_width="wrap_content"
-        android:layout_height="150dp" />
+        android:layout_width="@dimen/max_width"
+        android:layout_height="150dp"
+        android:layout_gravity="right"/>
 
     <Button
         android:id="@+id/btn_start"

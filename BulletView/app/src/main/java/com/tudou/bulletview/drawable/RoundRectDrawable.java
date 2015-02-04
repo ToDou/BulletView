@@ -91,8 +91,8 @@ public class RoundRectDrawable extends Drawable {
         mOuter = new float[] {
                 mTopLeftRedius, mTopLeftRedius
                 ,mTopRightRedius, mTopRightRedius
-                ,mBottomLeftRedius, mBottomLeftRedius
                 ,mBottomRightRedius, mBottomRightRedius
+                ,mBottomLeftRedius, mBottomLeftRedius
         };
         mShape = new RoundRectShape(mOuter, null, null);
     }
