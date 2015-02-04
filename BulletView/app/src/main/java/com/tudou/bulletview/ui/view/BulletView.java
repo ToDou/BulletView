@@ -51,6 +51,7 @@ public class BulletView extends LinearLayout {
     private LinearLayout mLayoutItem;
     private Context mContext;
     private int mTotalHeight;
+    private int mTotalHeightPre;
     private CountDownTimer mTimer;
     private int maxHeight;
 
@@ -109,12 +110,12 @@ public class BulletView extends LinearLayout {
         mLayoutItem.setLayoutParams(lParams);
         addView(mLayoutItem);
         mLayoutItem.addView(frameLayout, layoutParams);
-        AlphaAnimation animation_alpha=new AlphaAnimation(0.1f,1.0f);
+      //  AlphaAnimation animation_alpha=new AlphaAnimation(0.1f,1.0f);
         //第一个参数fromAlpha为 动画开始时候透明度
         //第二个参数toAlpha为 动画结束时候透明度
-        animation_alpha.setDuration(500);//设置时间持续时间为 5000毫秒
-        button.setAnimation(animation_alpha);
-        button.startAnimation(animation_alpha);
+       // animation_alpha.setDuration(500);//设置时间持续时间为 5000毫秒
+       // button.setAnimation(animation_alpha);
+        //button.startAnimation(animation_alpha);
     }
 
     private void refresh() {
@@ -136,12 +137,14 @@ public class BulletView extends LinearLayout {
                     return;
                 }
                 addTag(new Comment(comments.get(0)));
+                comments.remove(0);
+                //getChildAt(getChildCount() - 1).setVisibility(View.GONE);
+                mTotalHeightPre = mTotalHeight;
                 mTotalHeight += DEFAULT_LAYOUT_MARGIN_TOP + getChildAt(getChildCount() - 1).getHeight();
-                getChildAt(getChildCount() - 1).setVisibility(View.GONE);
                 final long millis = millisUntilFinished;
                 //int layoutAdd = calculateHeight(comments.get(0)) + DEFAULT_LAYOUT_MARGIN_TOP;
                 int layoutAdd = getChildAt(getChildCount() - 1).getHeight();
-                while (mTotalHeight + layoutAdd > MAX_HEIGHT) {
+                while (mTotalHeight > MAX_HEIGHT) {
                     int removeHeight = getChildAt(0).getHeight();
                     removeViewAt(0);
                     mTotalHeight -= removeHeight + DEFAULT_LAYOUT_MARGIN_TOP;
@@ -153,37 +156,9 @@ public class BulletView extends LinearLayout {
                     //第二个参数toXDelta为动画结束时 X坐标上的移动位置
                     //第三个参数fromYDelta为动画起始时Y坐标上的移动位置
                     //第三个参数toYDelta为动画结束时Y坐标上的移动位置
-                    if (i == getChildCount() - 1) {
-                        animation_translate.setAnimationListener(new Animation.AnimationListener() {
-                            @Override
-                            public void onAnimationStart(Animation animation) {
-
-                            }
-
-                            @Override
-                            public void onAnimationEnd(Animation animation) {
-                                if (comments.size() == 0) {
-                                    mTimer.cancel();
-                                    return;
-                                }
-                                comments.remove(0);
-                                getChildAt(getChildCount() - 1).setVisibility(View.VISIBLE);
-                            }
-
-                            @Override
-                            public void onAnimationRepeat(Animation animation) {
-
-                            }
-                        });
-                    }
                     animation_translate.setDuration(500);//设置时间持续时间为 5000毫秒
                     view.setAnimation(animation_translate);
                     view.startAnimation(animation_translate);
-                }
-                if (getChildCount() == 0) {
-                    addTag(new Comment(comments.get(0)));
-                    mTotalHeight += DEFAULT_LAYOUT_MARGIN_TOP + getChildAt(getChildCount() - 1).getHeight();
-                    comments.remove(0);
                 }
             }
 
