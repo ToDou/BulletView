@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 
 import com.tudou.bulletview.R;
@@ -40,31 +41,52 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (mBulletView.isScreenPause()) {
+            mBulletView.reStart();
+        }
     }
 
-    @OnClick(R.id.btn_start)
+    @OnClick({
+            R.id.btn_start,
+            R.id.btn_reShow
+    })
     @SuppressWarnings("unused")
-    public void OnClick() {
-        if (!isStart) {
-            ArrayList<String> strings = new ArrayList<>();
-            for (int i = 0; i < comments.length; i++) {
-                strings.add(comments[i]);
-            }
-            mBulletView.addComments(strings);
-            mBtnStart.setText("暂停");
-            isStart = true;
-            isPause = false;
-        } else {
-            if (!isPause) {
-                mBulletView.stop();
-                mBtnStart.setText("继续");
-                isPause = true;
-            } else {
-                mBulletView.start();
-                mBtnStart.setText("暂停");
-                isPause = false;
-            }
+    public void OnClick(View view) {
+        switch (view.getId()) {
+            case R.id.btn_start:
+
+                if (!isStart) {
+                    ArrayList<String> strings = new ArrayList<>();
+                    for (int i = 0; i < comments.length; i++) {
+                        strings.add(comments[i]);
+                    }
+                    mBulletView.setData(strings);
+                    mBtnStart.setText("暂停");
+                    isStart = true;
+                    isPause = false;
+                } else {
+                    if (!isPause) {
+                        mBulletView.stop();
+                        mBtnStart.setText("继续");
+                        isPause = true;
+                    } else {
+                        mBulletView.reStart();
+                        mBtnStart.setText("暂停");
+                        isPause = false;
+                    }
+                }
+
+                break;
+            case R.id.btn_reShow:
+                mBulletView.reShow();
+                break;
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mBulletView.screenStop();
     }
 
     @Override

@@ -14,11 +14,25 @@
         android:layout_height="@dimen/max_height"
         android:layout_gravity="right"/>
 
-    <Button
-        android:id="@+id/btn_start"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:layout_gravity="bottom|center_horizontal"
-        android:text="开始"/>
+        >
+
+        <Button
+            android:id="@+id/btn_start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="开始"/>
+
+        <Button
+            android:id="@+id/btn_reShow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="重新开始"/>
+
+        </LinearLayout>
 
 </FrameLayout>

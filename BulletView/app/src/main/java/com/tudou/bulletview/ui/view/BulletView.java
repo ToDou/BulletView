@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -22,7 +23,6 @@ import com.tudou.bulletview.R;
 import com.tudou.bulletview.drawable.StateRoundRectDrawable;
 import com.tudou.bulletview.model.Comment;
 import com.tudou.bulletview.util.DrawableUtils;
-
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,6 +44,8 @@ public class BulletView extends LinearLayout {
     private int mTotalHeight;
     private CountDownTimer mTimer;
     private ArrayList<String> mComments;
+    private int mTotalIndex;
+    private boolean isScreenPause;
 
     public BulletView(Context context) {
         this(context, null);
@@ -94,7 +96,7 @@ public class BulletView extends LinearLayout {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     stop();
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    start();
+                    reStart();
                 }
                 return false;
             }
@@ -120,16 +122,34 @@ public class BulletView extends LinearLayout {
         button.startAnimation(animation_alpha);
     }
 
-    public void addComments(ArrayList<String> comments) {
+    public void setData(ArrayList<String> comments) {
         mComments = comments;
+        startShow();
+    }
+
+    public void reShow() {
+        mTimer.onFinish();
+        mTimer = null;
+        mTotalHeight = 0;
+        mTotalIndex = 0;
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                removeAllViews();
+                startShow();
+            }
+        }, 1000);
+    }
+
+    public void startShow() {
         mTimer = new CountDownTimer(20 * 1000 * 1000, 3 * 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-                if (mComments.size() == 0) {
+                if (mTotalIndex == mComments.size() - 1) {
                     mTimer.cancel();
                     return;
                 }
-                int layoutAdd = calculateHeight(mComments.get(0)) + DEFAULT_LAYOUT_MARGIN_TOP;
+                int layoutAdd = calculateHeight(mComments.get(mTotalIndex)) + DEFAULT_LAYOUT_MARGIN_TOP;
 
                 ArrayList<Integer> removeList = new ArrayList<>();
 
@@ -142,8 +162,8 @@ public class BulletView extends LinearLayout {
                 doAnimationRemove(removeList, removeList.size(), layoutAdd);
 
                 if (getChildCount() == 0) {
-                    addTag(new Comment(mComments.get(0)));
-                    mComments.remove(0);
+                    addTag(new Comment(mComments.get(mTotalIndex)));
+                    mTotalIndex += 1;
                 }
             }
 
@@ -205,13 +225,13 @@ public class BulletView extends LinearLayout {
 
                     @Override
                     public void onAnimationEnd(Animation animation) {
-                        if (mComments.size() == 0) {
+                        if (mTotalIndex == mComments.size() - 1) {
                             mTimer.cancel();
                             return;
                         }
                         view.clearAnimation();
-                        addTag(new Comment(mComments.get(0)));
-                        mComments.remove(0);
+                        addTag(new Comment(mComments.get(mTotalIndex)));
+                        mTotalIndex += 1;
                     }
 
                     @Override
@@ -250,7 +270,18 @@ public class BulletView extends LinearLayout {
         }
     }
 
-    public void start() {
+    public void screenStop() {
+        if (mTimer != null) {
+            mTimer.cancel();
+        }
+        isScreenPause = true;
+    }
+
+    public boolean isScreenPause() {
+        return isScreenPause;
+    }
+
+    public void reStart() {
         if (mTimer != null) {
             mTimer.start();
         }
