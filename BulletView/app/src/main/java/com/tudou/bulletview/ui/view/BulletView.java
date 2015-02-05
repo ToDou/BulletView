@@ -8,6 +8,7 @@ import android.os.CountDownTimer;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -86,6 +87,19 @@ public class BulletView extends LinearLayout {
         } else {
             button.setBackgroundDrawable(drawable);
         }
+
+        button.setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    stop();
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    start();
+                }
+                return false;
+            }
+        });
+
         if (line > 0) btnWidth = MAX_WIDTH;
         LayoutParams layoutParams = new LayoutParams(btnWidth, btnHeight);
         FrameLayout frameLayout = new FrameLayout(mContext);
