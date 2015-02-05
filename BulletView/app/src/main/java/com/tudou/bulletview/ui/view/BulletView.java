@@ -108,7 +108,7 @@ public class BulletView extends LinearLayout {
 
     public void addComments(ArrayList<String> comments) {
         mComments = comments;
-        mTimer = new CountDownTimer(20 * 1000 * 1000, 2 * 1000) {
+        mTimer = new CountDownTimer(20 * 1000 * 1000, 3 * 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 if (mComments.size() == 0) {
@@ -134,9 +134,7 @@ public class BulletView extends LinearLayout {
                     mTotalHeight -= removeHeight + DEFAULT_LAYOUT_MARGIN_TOP;
                 }
 
-                doAnimationRemove(removeList);
-
-                doAnimationAdd(layoutAdd);
+                doAnimationRemove(removeList, removeList.size(), layoutAdd);
 
                 if (getChildCount() == 0) {
                     addTag(new Comment(mComments.get(0)));
@@ -152,10 +150,37 @@ public class BulletView extends LinearLayout {
         mTimer.start();
     }
 
-    private void doAnimationRemove(ArrayList<Integer> list) {
-        for (int i = 0; i < list.size(); i ++) {
-
+    private void doAnimationRemove(final ArrayList<Integer> list, final int listSize, final int layoutAdd) {
+        if (list.size() == 0) {
+            doAnimationAdd(layoutAdd);
+            return;
         }
+        final View view = getChildAt(0);
+        AlphaAnimation animation_alpha = new AlphaAnimation(1.0f, 0.0f);
+        animation_alpha.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                view.clearAnimation();
+                removeView(view);
+                list.remove(0);
+                doAnimationRemove(list, listSize, layoutAdd);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        //第一个参数fromAlpha为 动画开始时候透明度
+        //第二个参数toAlpha为 动画结束时候透明度
+        animation_alpha.setDuration(200 / listSize);//设置时间持续时间为 5000毫秒
+        view.setAnimation(animation_alpha);
+        view.startAnimation(animation_alpha);
     }
 
     private void doAnimationAdd(int layoutAdd) {
