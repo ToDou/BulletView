@@ -119,15 +119,6 @@ public class BulletView extends LinearLayout {
 
                 ArrayList<Integer> removeList = new ArrayList<>();
 
-                /*
-                while (mTotalHeight + layoutAdd > MAX_HEIGHT) {
-                    int removeHeight = getChildAt(0).getHeight();
-                    //removeViewAt(0);
-                    mTotalHeight -= removeHeight + DEFAULT_LAYOUT_MARGIN_TOP;
-                }
-
-                 */
-
                 for (int i = 0; i < getChildCount() && mTotalHeight + layoutAdd > MAX_HEIGHT; i++) {
                     int removeHeight = getChildAt(i).getHeight();
                     removeList.add(i);
