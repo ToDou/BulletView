@@ -129,6 +129,13 @@ public class BulletView extends LinearLayout {
     }
 
     public void reShow() {
+        synchronized (isDoingReShow) {
+            if (isDoingReShow) {
+                return;
+            } else {
+                isDoingReShow = true;
+            }
+        }
         mTimer.cancel();
         mTimer.onFinish();
         new Handler().postDelayed(new Runnable() {
@@ -139,6 +146,9 @@ public class BulletView extends LinearLayout {
                 mTotalIndex = 0;
                 removeAllViews();
                 startShow();
+                synchronized (isDoingReShow) {
+                    isDoingReShow = false;
+                }
             }
         }, 1000);
     }
