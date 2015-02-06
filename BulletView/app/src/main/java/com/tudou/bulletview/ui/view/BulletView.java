@@ -129,6 +129,7 @@ public class BulletView extends LinearLayout {
     }
 
     public void reShow() {
+        mTimer.cancel();
         mTimer.onFinish();
         new Handler().postDelayed(new Runnable() {
             @Override
