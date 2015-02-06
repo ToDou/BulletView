@@ -46,6 +46,7 @@ public class BulletView extends LinearLayout {
     private ArrayList<String> mComments;
     private int mTotalIndex;
     private boolean isScreenPause;
+    private Boolean isDoingReShow = false;
 
     public BulletView(Context context) {
         this(context, null);
@@ -129,12 +130,12 @@ public class BulletView extends LinearLayout {
 
     public void reShow() {
         mTimer.onFinish();
-        mTimer = null;
-        mTotalHeight = 0;
-        mTotalIndex = 0;
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
+                mTimer = null;
+                mTotalHeight = 0;
+                mTotalIndex = 0;
                 removeAllViews();
                 startShow();
             }
