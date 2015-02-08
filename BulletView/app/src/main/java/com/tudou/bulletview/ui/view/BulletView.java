@@ -154,7 +154,7 @@ public class BulletView extends LinearLayout {
     }
 
     public void startShow() {
-        mTimer = new CountDownTimer(20 * 1000 * 1000, 3 * 1000) {
+        mTimer = new CountDownTimer(2 * 1000, 2 * 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 if (mTotalIndex == mComments.size() - 1) {
@@ -181,7 +181,7 @@ public class BulletView extends LinearLayout {
 
             @Override
             public void onFinish() {
-
+                mTimer.start();
             }
         };
         mTimer.start();
