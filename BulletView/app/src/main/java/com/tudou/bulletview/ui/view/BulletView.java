@@ -81,8 +81,8 @@ public class BulletView extends LinearLayout {
         int btnHeight = getHeight(mContext, tag.content, 14, MAX_WIDTH, Typeface.DEFAULT, DEFAULT_TAG_PADDING, DEFAULT_TAG_PADDING_TOP);
         StateRoundRectDrawable drawable = new StateRoundRectDrawable(Color.parseColor(DrawableUtils.getBackgoundColor(
                 tag.content.hashCode())), Color.parseColor("#5d5d5d"));
-        drawable.setBottomLeftRedius(btnHeight / 2);
-        drawable.setTopLeftRedius(btnHeight / 2);
+        drawable.setBottomLeftRedius(DEFAULT_TAG_PADDING);
+        drawable.setTopLeftRedius(DEFAULT_TAG_PADDING);
         drawable.setBottomRightRedius(0);
         drawable.setTopRightRedius(0);
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
@@ -154,7 +154,7 @@ public class BulletView extends LinearLayout {
     }
 
     public void startShow() {
-        mTimer = new CountDownTimer(2 * 1000, 2 * 1000) {
+        mTimer = new CountDownTimer(1501, 1500) {
             @Override
             public void onTick(long millisUntilFinished) {
                 if (mTotalIndex == mComments.size() - 1) {
