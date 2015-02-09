@@ -23,6 +23,7 @@ import com.tudou.bulletview.R;
 import com.tudou.bulletview.drawable.StateRoundRectDrawable;
 import com.tudou.bulletview.model.Comment;
 import com.tudou.bulletview.util.DrawableUtils;
+
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,8 +46,10 @@ public class BulletView extends LinearLayout {
     private CountDownTimer mTimer;
     private ArrayList<String> mComments;
     private int mTotalIndex;
-    private boolean isScreenPause;
+    private int mNextIndex;
+    private Boolean isScreenPause = false;
     private Boolean isDoingReShow = false;
+    private Boolean isPause = false;
 
     public BulletView(Context context) {
         this(context, null);
@@ -69,7 +72,7 @@ public class BulletView extends LinearLayout {
 
     private void addTag(final Comment tag) {
         final Button button = new Button(mContext);
-        button.setGravity(Gravity.CENTER);
+        button.setGravity(Gravity.LEFT);
         button.setText(stringFilter(ToDBC(tag.content)));
         button.setTextColor(getResources().getColor(android.R.color.white));
         button.setTextSize(14);
@@ -94,10 +97,12 @@ public class BulletView extends LinearLayout {
         button.setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    stop();
-                } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    reStart();
+                synchronized (isPause) {
+                    if (isPause) {
+                        reStart();
+                    } else {
+                        stop();
+                    }
                 }
                 return false;
             }
@@ -124,6 +129,15 @@ public class BulletView extends LinearLayout {
     }
 
     public void setData(ArrayList<String> comments) {
+        stop();
+        finsh();
+        removeAllView();
+        mTotalHeight = 0;
+        mNextIndex = 0;
+        synchronized (isPause) {
+            isPause = false;
+        }
+        //getBarrageList(timestamp); # to get the internet info
         mComments = comments;
         startShow();
     }
@@ -136,30 +150,55 @@ public class BulletView extends LinearLayout {
                 isDoingReShow = true;
             }
         }
-        mTimer.cancel();
-        mTimer.onFinish();
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mTimer = null;
-                mTotalHeight = 0;
-                mTotalIndex = 0;
-                removeAllViews();
-                startShow();
-                synchronized (isDoingReShow) {
-                    isDoingReShow = false;
-                }
-            }
-        }, 1000);
+        stop();
+        finsh();
+
+        mTotalHeight = 0;
+        mNextIndex = 0;
+        removeAllView();
+        startShow();
+        synchronized (isDoingReShow) {
+            isDoingReShow = false;
+        }
     }
 
     public void startShow() {
+        if (mTimer != null) {
+            synchronized (mTimer) {
+                startTimer();
+            }
+        } else {
+            startTimer();
+        }
+    }
+
+    public void refresh(String string) {
+        if (mComments == null) {
+            mComments = new ArrayList<>();
+            mComments.add(mNextIndex, string);
+            startShow();
+        } else if (isPause) {
+            mComments.add(mNextIndex, string);
+            reStart();
+        }
+        //getBarrageList(timestamp);
+    }
+
+    public void startTimer() {
         mTimer = new CountDownTimer(1501, 1500) {
             @Override
             public void onTick(long millisUntilFinished) {
-                if (mTotalIndex == mComments.size() - 1) {
-                    mTimer.cancel();
+                if (getVisibility() != View.VISIBLE) {
+                    stop();
                     return;
+                }
+                if (mComments == null) {
+                    finsh();
+                    return;
+                }
+                if (mNextIndex > mComments.size() - 1 && canShowLoop()) {
+                    mNextIndex = 0;
+                    reStart();
                 }
                 int layoutAdd = calculateHeight(mComments.get(mTotalIndex)) + DEFAULT_LAYOUT_MARGIN_TOP;
 
@@ -174,14 +213,21 @@ public class BulletView extends LinearLayout {
                 doAnimationRemove(removeList, removeList.size(), layoutAdd);
 
                 if (getChildCount() == 0) {
-                    addTag(new Comment(mComments.get(mTotalIndex)));
-                    mTotalIndex += 1;
+                    addTag(new Comment(mComments.get(mNextIndex)));
+                    mTotalIndex++;
                 }
             }
 
             @Override
             public void onFinish() {
-                mTimer.start();
+                if (mComments != null && mNextIndex <= mComments.size() - 1) {
+                    mTimer.start();
+                }
+
+                if (mComments != null && mNextIndex > mComments.size() - 1 && canShowLoop()) {
+                    mNextIndex = 0;
+                    reStart();
+                }
             }
         };
         mTimer.start();
@@ -237,13 +283,20 @@ public class BulletView extends LinearLayout {
 
                     @Override
                     public void onAnimationEnd(Animation animation) {
-                        if (mTotalIndex == mComments.size() - 1) {
-                            mTimer.cancel();
+
+                        if (mComments == null) {
+                            finsh();
                             return;
                         }
+
+                        if (mNextIndex > mComments.size() - 1 && canShowLoop()) {
+                            mNextIndex = 0;
+                            reStart();
+                        }
+
                         view.clearAnimation();
-                        addTag(new Comment(mComments.get(mTotalIndex)));
-                        mTotalIndex += 1;
+                        addTag(new Comment(mComments.get(mNextIndex)));
+                        mNextIndex++;
                     }
 
                     @Override
@@ -276,17 +329,29 @@ public class BulletView extends LinearLayout {
         }
     }
 
-    public void stop() {
+    private void stop() {
+        if (mTimer != null) {
+            synchronized (mTimer) {
+                mTimer.cancel();
+                synchronized (isPause) {
+                    isPause = true;
+                }
+            }
+        }
+    }
+
+    private void finsh() {
         if (mTimer != null) {
             mTimer.cancel();
+            mTimer = null;
         }
     }
 
     public void screenStop() {
-        if (mTimer != null) {
-            mTimer.cancel();
+        stop();
+        synchronized (isScreenPause) {
+            isScreenPause = true;
         }
-        isScreenPause = true;
     }
 
     public boolean isScreenPause() {
@@ -294,9 +359,32 @@ public class BulletView extends LinearLayout {
     }
 
     public void reStart() {
-        if (mTimer != null) {
-            mTimer.start();
+        stop();
+        synchronized (isPause) {
+            if (mTimer != null) {
+                synchronized (mTimer) {
+                    if (isPause == true) {
+                        mTimer.start();
+                    }
+                }
+                isPause = false;
+            }
         }
+        synchronized (isScreenPause) {
+            if (isScreenPause = true) {
+                isScreenPause = false;
+            }
+        }
+    }
+
+    public void show() {
+        this.setVisibility(View.VISIBLE);
+        reStart();
+    }
+
+    public void hide() {
+        stop();
+        this.setVisibility(View.GONE);
     }
 
     public static int getHeight(Context context, CharSequence text, int textSize, int deviceWidth, Typeface typeface, int paddingH, int paddingV) {
@@ -314,6 +402,26 @@ public class BulletView extends LinearLayout {
     private int calculateHeight(String comment) {
         int btnHeight = getHeight(mContext, comment, 14, MAX_WIDTH, Typeface.DEFAULT, DEFAULT_TAG_PADDING, DEFAULT_TAG_PADDING_TOP);
         return btnHeight;
+    }
+
+    private boolean canShowLoop() {
+        if (mComments == null) return false;
+        int total = 0;
+        for (int i = mComments.size() - 1; i >= 0; i--) {
+            total += calculateHeight(mComments.get(i)) + DEFAULT_LAYOUT_MARGIN_TOP;
+            if (total > MAX_HEIGHT) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void removeAllView() {
+        clearAnimation();
+        for (int i = 0; i < getChildCount(); i++) {
+            getChildAt(i).clearAnimation();
+        }
+        removeAllViews();
     }
 
     /**
