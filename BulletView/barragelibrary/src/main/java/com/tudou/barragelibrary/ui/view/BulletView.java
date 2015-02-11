@@ -1,32 +1,27 @@
-package com.tudou.bulletview.ui.view;
+package com.tudou.barragelibrary.ui.view;
 
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.CountDownTimer;
-import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.tudou.bulletview.R;
-import com.tudou.bulletview.drawable.StateRoundRectDrawable;
-import com.tudou.bulletview.model.Comment;
-import com.tudou.bulletview.util.DrawableUtils;
+import com.tudou.barragelibrary.R;
+import com.tudou.barragelibrary.drawable.StateRoundRectDrawable;
+import com.tudou.barragelibrary.model.Comment;
+import com.tudou.barragelibrary.util.DrawableUtils;
 
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by tudou on 15-2-3.

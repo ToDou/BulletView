@@ -1,4 +1,4 @@
-package com.tudou.bulletview.drawable;
+package com.tudou.barragelibrary.drawable;
 
 import android.graphics.Rect;
 import android.graphics.drawable.StateListDrawable;

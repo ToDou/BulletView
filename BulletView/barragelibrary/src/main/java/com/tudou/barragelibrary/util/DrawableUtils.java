@@ -1,4 +1,4 @@
-package com.tudou.bulletview.util;
+package com.tudou.barragelibrary.util;
 
 
 /**

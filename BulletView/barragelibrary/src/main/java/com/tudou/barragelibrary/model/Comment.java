@@ -1,4 +1,4 @@
-package com.tudou.bulletview.model;
+package com.tudou.barragelibrary.model;
 
 /**
  * Created by tudou on 15-2-3.

@@ -7,8 +7,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import com.tudou.barragelibrary.ui.view.BulletView;
 import com.tudou.bulletview.R;
-import com.tudou.bulletview.ui.view.BulletView;
 
 import java.util.ArrayList;
 
